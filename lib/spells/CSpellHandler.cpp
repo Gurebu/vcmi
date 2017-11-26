@@ -1038,13 +1038,13 @@ void CSpellHandler::update780()
 
 		const JsonNode & actualConfig = coreSpells[spell->identifier];
 
-		if(actualConfig.getType() != JsonNode::DATA_STRUCT)
+		if(actualConfig.getType() != JsonNode::JsonType::DATA_STRUCT)
 		{
 			logGlobal->error("Spell not found %s", spell->identifier);
 			continue;
 		}
 
-		if(actualConfig["targetCondition"].getType() == JsonNode::DATA_STRUCT && !actualConfig["targetCondition"].Struct().empty())
+		if(actualConfig["targetCondition"].getType() == JsonNode::JsonType::DATA_STRUCT && !actualConfig["targetCondition"].Struct().empty())
 		{
 			spell->targetCondition = actualConfig["targetCondition"];
 		}
@@ -1057,7 +1057,7 @@ void CSpellHandler::update780()
 
 			CSpell::LevelInfo & levelObject = spell->levels[levelIndex];
 
-			if(levelNode["battleEffects"].getType() == JsonNode::DATA_STRUCT && !levelNode["battleEffects"].Struct().empty())
+			if(levelNode["battleEffects"].getType() == JsonNode::JsonType::DATA_STRUCT && !levelNode["battleEffects"].Struct().empty())
 			{
 				levelObject.battleEffects = levelNode["battleEffects"];
 
