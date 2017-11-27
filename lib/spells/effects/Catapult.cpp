@@ -57,14 +57,10 @@ bool Catapult::applicable(Problem & problem, const Mechanics * m) const
 		return m->adaptProblem(ESpellCastProblem::NO_APPROPRIATE_TARGET, problem);
 	}
 
-	if(m->isSmart())
+	if(m->isSmart() && m->casterSide != BattleSide::ATTACKER)
 	{
-		const auto side = m->cb->playerToSide(m->caster->getOwner());
-		if(!side)
-			return m->adaptProblem(ESpellCastProblem::INVALID, problem);
 		//if spell targeting is smart, then only attacker can use it
-		if(side.get() != BattleSide::ATTACKER)
-			return m->adaptProblem(ESpellCastProblem::NO_APPROPRIATE_TARGET, problem);
+		return m->adaptProblem(ESpellCastProblem::NO_APPROPRIATE_TARGET, problem);
 	}
 
 	const auto attackableBattleHexes = m->cb->getAttackableBattleHexes();
