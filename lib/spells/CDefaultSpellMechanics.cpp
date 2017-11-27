@@ -12,6 +12,8 @@
 
 #include "CDefaultSpellMechanics.h"
 
+#include "CSpellHandler.h"
+
 #include "../CStack.h"
 #include "../battle/BattleInfo.h"
 

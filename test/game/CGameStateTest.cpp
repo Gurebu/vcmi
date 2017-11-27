@@ -23,6 +23,7 @@
 
 #include "../../lib/mapping/CMap.h"
 
+#include "../../lib/spells/CSpellHandler.h"
 #include "../../lib/spells/ISpellMechanics.h"
 
 class CGameStateTest : public ::testing::Test, public SpellCastEnvironment, public MapListener
