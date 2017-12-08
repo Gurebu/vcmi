@@ -437,7 +437,7 @@ void CBattleInfoCallback::battleGetStackCountOutsideHexes(bool *ac) const
 		ac[i] = (accessibility[i] == EAccessibility::ACCESSIBLE);
 }
 
-std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * stack, BattleHex assumedPosition) const
+std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit, BattleHex assumedPosition) const
 {
 	std::vector<BattleHex> ret;
 
@@ -445,12 +445,14 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 	if(!assumedPosition.isValid()) //turrets
 		return ret;
 
-	ReachabilityInfo::Parameters params(stack, assumedPosition);
+	auto unitSpeed = unit->Speed(0, true);
 
-	if(!battleDoWeKnowAbout(stack->unitSide()))
+	ReachabilityInfo::Parameters params(unit, assumedPosition);
+
+	if(!battleDoWeKnowAbout(unit->unitSide()))
 	{
 		//Stack is held by enemy, we can't use his perspective to check for reachability.
-		// Happens ie. when hovering enemy stack for its range. The arg could be set properly, but it's easier to fix it here.
+		// Happens ie. when hovering enemy unit for its range. The arg could be set properly, but it's easier to fix it here.
 		params.perspective = battleGetMySide();
 	}
 
@@ -462,7 +464,7 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 		if(!reachability.isReachable(i))
 			continue;
 
-		if(battleTacticDist() && battleGetTacticsSide() == stack->unitSide())
+		if(battleTacticDist() && battleGetTacticsSide() == unit->unitSide())
 		{
 			//Stack has to perform tactic-phase movement -> can enter any reachable tile within given range
 			if(!isInTacticRange(i))
@@ -470,8 +472,8 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 		}
 		else
 		{
-			//Not tactics phase -> destination must be reachable and within stack range.
-			if(reachability.distances[i] > stack->Speed(0, true))
+			//Not tactics phase -> destination must be reachable and within unit range.
+			if(reachability.distances[i] > unitSpeed)
 				continue;
 		}
 
@@ -483,40 +485,19 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 
 std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const CStack * stack, bool addOccupiable, std::vector<BattleHex> * attackable) const
 {
-	std::vector<BattleHex> ret;
+	std::vector<BattleHex> ret = battleGetAvailableHexes(stack, stack->getPosition());
 
-	RETURN_IF_NOT_BATTLE(ret);
-	if(!stack->initialPosition.isValid()) //turrets
+	if(ret.empty())
 		return ret;
 
-	auto reachability = getReachability(stack);
-
-	for (int i = 0; i < GameConstants::BFIELD_SIZE; ++i)
+	if(addOccupiable && stack->doubleWide())
 	{
-		// If obstacles or other stacks makes movement impossible, it can't be helped.
-		if(!reachability.isReachable(i))
-			continue;
+		std::vector<BattleHex> occupiable;
 
-		if(battleTacticDist() && battleGetTacticsSide() == stack->side)
-		{
-			//Stack has to perform tactic-phase movement -> can enter any reachable tile within given range
-			if(!isInTacticRange(i))
-				continue;
-		}
-		else
-		{
-			//Not tactics phase -> destination must be reachable and within stack range.
-			if(reachability.distances[i] > stack->Speed(0, true))
-				continue;
-		}
+		for(auto hex : ret)
+			occupiable.push_back(stack->occupiedHex(hex));
 
-		ret.push_back(i);
-
-		if(addOccupiable && stack->doubleWide())
-		{
-			//If two-hex stack can stand on hex i then obviously it can occupy its second hex from that position
-			ret.push_back(stack->occupiedHex(i));
-		}
+		vstd::concatenate(ret, occupiable);
 	}
 
 

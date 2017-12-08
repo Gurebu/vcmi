@@ -53,7 +53,7 @@ public:
 	void battleGetStackCountOutsideHexes(bool *ac) const; // returns hexes which when in front of a stack cause us to move the amount box back
 
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position
-	std::vector<BattleHex> battleGetAvailableHexes(const CStack * stack, bool addOccupiable, std::vector<BattleHex> * attackable = nullptr) const;
+	std::vector<BattleHex> battleGetAvailableHexes(const CStack * stack, bool addOccupiable, std::vector<BattleHex> * attackable) const;
 
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position (lite version)
 	std::vector<BattleHex> battleGetAvailableHexes(const battle::Unit * stack, BattleHex assumedPosition) const;

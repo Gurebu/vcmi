@@ -15,6 +15,7 @@
 #include "StackWithBonuses.h"
 #include "EnemyInfo.h"
 #include "PossibleSpellcast.h"
+#include "../../lib/CStopWatch.h"
 #include "../../lib/CThreadHelper.h"
 #include "../../lib/spells/CSpellHandler.h"
 #include "../../lib/spells/ISpellMechanics.h"
@@ -358,8 +359,20 @@ void CBattleAI::attemptCastingSpell()
 
 	}
 
-	CThreadHelper threadHelper(&tasks, std::max<uint32_t>(boost::thread::hardware_concurrency(), 1));
+	uint32_t threadCount = boost::thread::hardware_concurrency();
+
+	if(threadCount == 0)
+	{
+		logGlobal->warn("No information of CPU cores available");
+		threadCount = 1;
+	}
+
+	CStopWatch timer;
+
+	CThreadHelper threadHelper(&tasks, threadCount);
 	threadHelper.run();
+
+	LOGFL("Evaluation took %d ms", timer.getDiff());
 
 	auto pscValue = [] (const PossibleSpellcast &ps) -> int64_t
 	{
