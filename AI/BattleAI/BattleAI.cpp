@@ -372,7 +372,7 @@ void CBattleAI::attemptCastingSpell()
 		LOGFL("Best spell is %s. Will cast.", castToPerform.spell->name);
 		BattleAction spellcast;
 		spellcast.actionType = EActionType::HERO_SPELL;
-		spellcast.additionalInfo = castToPerform.spell->id;
+		spellcast.actionSubtype = castToPerform.spell->id;
 		spellcast.setTarget(castToPerform.dest);
 		spellcast.side = side;
 		spellcast.stackNumber = (!side) ? -1 : -2;
