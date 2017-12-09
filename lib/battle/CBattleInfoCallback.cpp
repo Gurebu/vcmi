@@ -157,15 +157,10 @@ ESpellCastProblem::ESpellCastProblem CBattleInfoCallback::battleCanCastSpell(con
 	return ESpellCastProblem::OK;
 }
 
-si8 CBattleInfoCallback::battleHasWallPenalty(const CStack * stack, BattleHex destHex) const
-{
-	return battleHasWallPenalty(stack, stack->getPosition(), destHex);
-}
-
-si8 CBattleInfoCallback::battleHasWallPenalty(const IBonusBearer * bonusBearer, BattleHex shooterPosition, BattleHex destHex) const
+bool CBattleInfoCallback::battleHasWallPenalty(const IBonusBearer * shooter, BattleHex shooterPosition, BattleHex destHex) const
 {
 	RETURN_IF_NOT_BATTLE(false);
-	if (!battleGetSiegeLevel() || bonusBearer->hasBonusOfType(Bonus::NO_WALL_PENALTY))
+	if (!battleGetSiegeLevel() || shooter->hasBonusOfType(Bonus::NO_WALL_PENALTY))
 		return false;
 
 	const int wallInStackLine = lineToWallHex(shooterPosition.getY());
@@ -771,7 +766,7 @@ TDmgRange CBattleInfoCallback::calculateDmgRange(const BattleAttackInfo & info) 
 	};
 
 	//wall / distance penalty + advanced air shield
-	const bool distPenalty = !attackerBonuses->hasBonusOfType(Bonus::NO_DISTANCE_PENALTY) && battleHasDistancePenalty(attackerBonuses, info.attacker->getPosition(), info.defender->getPosition());
+	const bool distPenalty = battleHasDistancePenalty(attackerBonuses, info.attacker->getPosition(), info.defender->getPosition());
 	const bool obstaclePenalty = battleHasWallPenalty(attackerBonuses, info.attacker->getPosition(), info.defender->getPosition());
 
 	if(info.shooting)
@@ -1374,28 +1369,23 @@ ReachabilityInfo::TDistances CBattleInfoCallback::battleGetDistances(const battl
 	return ret;
 }
 
-si8 CBattleInfoCallback::battleHasDistancePenalty(const CStack * stack, BattleHex destHex) const
-{
-	return battleHasDistancePenalty(stack, stack->getPosition(), destHex);
-}
-
-si8 CBattleInfoCallback::battleHasDistancePenalty(const IBonusBearer *bonusBearer, BattleHex shooterPosition, BattleHex destHex) const
+bool CBattleInfoCallback::battleHasDistancePenalty(const IBonusBearer * shooter, BattleHex shooterPosition, BattleHex destHex) const
 {
 	RETURN_IF_NOT_BATTLE(false);
-	if(bonusBearer->hasBonusOfType(Bonus::NO_DISTANCE_PENALTY))
+	if(shooter->hasBonusOfType(Bonus::NO_DISTANCE_PENALTY))
 		return false;
 
-	if(const CStack * dstStack = battleGetStackByPos(destHex, false))
+	if(auto target = battleGetUnitByPos(destHex, true))
 	{
 		//If any hex of target creature is within range, there is no penalty
-		for(auto hex : dstStack->getHexes())
+		for(auto hex : target->getHexes())
 			if(BattleHex::getDistance(shooterPosition, hex) <= GameConstants::BATTLE_PENALTY_DISTANCE)
 				return false;
 		//TODO what about two-hex shooters?
 	}
 	else
 	{
-		if (BattleHex::getDistance(shooterPosition, destHex) <= GameConstants::BATTLE_PENALTY_DISTANCE)
+		if(BattleHex::getDistance(shooterPosition, destHex) <= GameConstants::BATTLE_PENALTY_DISTANCE)
 			return false;
 	}
 
@@ -1468,9 +1458,9 @@ ui32 CBattleInfoCallback::battleGetSpellCost(const CSpell * sp, const CGHeroInst
 	return ret - manaReduction + manaIncrease;
 }
 
-si8 CBattleInfoCallback::battleHasShootingPenalty(const CStack * stack, BattleHex destHex)
+bool CBattleInfoCallback::battleHasShootingPenalty(const battle::Unit * shooter, BattleHex destHex) const
 {
-	return battleHasDistancePenalty(stack, destHex) || battleHasWallPenalty(stack, destHex);
+	return battleHasDistancePenalty(shooter, shooter->getPosition(), destHex) || battleHasWallPenalty(shooter, shooter->getPosition(), destHex);
 }
 
 bool CBattleInfoCallback::battleIsUnitBlocked(const battle::Unit * unit) const

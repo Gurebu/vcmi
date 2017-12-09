@@ -82,7 +82,17 @@ std::vector<BattleHex> Unit::getSurroundingHexes(BattleHex assumedPosition) cons
 
 bool Unit::coversPos(BattleHex pos) const
 {
-	return vstd::contains(getHexes(getPosition(), doubleWide(), unitSide()), pos);
+	return vstd::contains(getHexes(), pos);
+}
+
+std::vector<BattleHex> Unit::getHexes() const
+{
+	return getHexes(getPosition());
+}
+
+std::vector<BattleHex> Unit::getHexes(BattleHex assumedPos) const
+{
+	return getHexes(assumedPos, doubleWide(), unitSide());
 }
 
 std::vector<BattleHex> Unit::getHexes(BattleHex assumedPos, bool twoHex, ui8 side)
@@ -99,6 +109,26 @@ std::vector<BattleHex> Unit::getHexes(BattleHex assumedPos, bool twoHex, ui8 sid
 	}
 
 	return hexes;
+}
+
+BattleHex Unit::occupiedHex() const
+{
+	return occupiedHex(getPosition());
+}
+
+BattleHex Unit::occupiedHex(BattleHex assumedPos) const
+{
+	if(doubleWide())
+	{
+		if(unitSide() == BattleSide::ATTACKER)
+			return assumedPos - 1;
+		else
+			return assumedPos + 1;
+	}
+	else
+	{
+		return BattleHex::INVALID;
+	}
 }
 
 void Unit::addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural) const

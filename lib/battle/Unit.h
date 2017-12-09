@@ -65,7 +65,12 @@ public:
 
 	bool coversPos(BattleHex position) const; //checks also if unit is double-wide
 
+	std::vector<BattleHex> getHexes() const; //up to two occupied hexes, starting from front
+	std::vector<BattleHex> getHexes(BattleHex assumedPos) const; //up to two occupied hexes, starting from front
 	static std::vector<BattleHex> getHexes(BattleHex assumedPos, bool twoHex, ui8 side);
+
+	BattleHex occupiedHex() const; //returns number of occupied hex (not the position) if stack is double wide; otherwise -1
+	BattleHex occupiedHex(BattleHex assumedPos) const; //returns number of occupied hex (not the position) if stack is double wide and would stand on assumedPos; otherwise -1
 
 	///MetaStrings
 	void addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural = boost::logic::indeterminate) const;

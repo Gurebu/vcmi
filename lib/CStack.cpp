@@ -139,36 +139,6 @@ bool CStack::waited(int turn) const
 	return stackState.waited(turn);
 }
 
-BattleHex CStack::occupiedHex() const
-{
-	return occupiedHex(stackState.position);
-}
-
-BattleHex CStack::occupiedHex(BattleHex assumedPos) const
-{
-	if(doubleWide())
-	{
-		if(side == BattleSide::ATTACKER)
-			return assumedPos - 1;
-		else
-			return assumedPos + 1;
-	}
-	else
-	{
-		return BattleHex::INVALID;
-	}
-}
-
-std::vector<BattleHex> CStack::getHexes() const
-{
-	return getHexes(stackState.position);
-}
-
-std::vector<BattleHex> CStack::getHexes(BattleHex assumedPos) const
-{
-	return battle::Unit::getHexes(assumedPos, doubleWide(), side);
-}
-
 BattleHex::EDir CStack::destShiftDir() const
 {
 	if(doubleWide())

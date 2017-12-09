@@ -59,8 +59,6 @@ void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 			break;
 		}
 
-		//TODO: generate stack ID before apply
-
 		auto unitId = m->cb->battleNextUnitId();
 
 		BattleStackAdded bsa;
