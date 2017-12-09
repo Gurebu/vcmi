@@ -48,6 +48,11 @@ public:
 
 	const battle::Unit * battleGetUnitByPos(BattleHex pos, bool onlyAlive = true) const;
 
+	///returns all alive units excluding turrets
+	battle::Units battleAliveUnits() const;
+	///returns all alive units from particular side excluding turrets
+	battle::Units battleAliveUnits(ui8 side) const;
+
 	void battleGetTurnOrder(std::vector<battle::Units> & out, const size_t maxUnits, const int maxTurns, const int turn = 0, int8_t lastMoved = -1) const;
 
 	void battleGetStackCountOutsideHexes(bool *ac) const; // returns hexes which when in front of a stack cause us to move the amount box back

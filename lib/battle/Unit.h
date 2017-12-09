@@ -76,6 +76,8 @@ public:
 	void addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural = boost::logic::indeterminate) const;
 	void addNameReplacement(MetaString & text, const boost::logic::tribool & plural = boost::logic::indeterminate) const;
 	std::string formatGeneralMessage(const int32_t baseTextId) const;
+
+    int getRawSurrenderCost() const;
 };
 
 } // namespace battle

@@ -164,4 +164,14 @@ std::string Unit::formatGeneralMessage(const int32_t baseTextId) const
 	return text.toString();
 }
 
+int Unit::getRawSurrenderCost() const
+{
+	//we pay for our stack that comes from our army slots - condition eliminates summoned cres and war machines
+	if(unitSlot().validSlot())
+		return creatureCost() * getCount();
+	else
+		return 0;
+}
+
+
 } // namespace battle

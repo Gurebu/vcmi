@@ -265,6 +265,22 @@ const battle::Unit * CBattleInfoCallback::battleGetUnitByPos(BattleHex pos, bool
 		return nullptr;
 }
 
+battle::Units CBattleInfoCallback::battleAliveUnits() const
+{
+	return battleGetUnitsIf([](const battle::Unit * unit)
+	{
+		return unit->isValidTarget(false);
+	});
+}
+
+battle::Units CBattleInfoCallback::battleAliveUnits(ui8 side) const
+{
+	return battleGetUnitsIf([=](const battle::Unit * unit)
+	{
+		return unit->isValidTarget(false) && unit->unitSide() == side;
+	});
+}
+
 //T is battle::Unit descendant
 template <typename T>
 const T * takeOneUnit(std::vector<const T *> & all, const int turn, int8_t & lastMoved)
@@ -508,14 +524,14 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const CStack
 			});
 			return availableNeighbor != ret.end();
 		};
-		for(const CStack * otherSt : battleAliveStacks(1-stack->side))
+		for(auto otherSt : battleAliveUnits(1-stack->side))
 		{
 			if(!otherSt->isValidTarget(false))
 				continue;
 
 			std::vector<BattleHex> occupied = otherSt->getHexes();
 
-			if(battleCanShoot(stack, otherSt->stackState.position))
+			if(battleCanShoot(stack, otherSt->getPosition()))
 			{
 				attackable->insert(attackable->end(), occupied.begin(), occupied.end());
 				continue;
@@ -951,9 +967,9 @@ AccessibilityInfo CBattleInfoCallback::getAccesibility() const
 	}
 
 	//tiles occupied by standing stacks
-	for(auto stack : battleAliveStacks())
+	for(auto unit : battleAliveUnits())
 	{
-		for(auto hex : stack->getHexes())
+		for(auto hex : unit->getHexes())
 			if(hex.isAvailable()) //towers can have <0 pos; we don't also want to overwrite side columns
 				ret[hex] = EAccessibility::ALIVE_STACK;
 	}
@@ -1443,15 +1459,15 @@ ui32 CBattleInfoCallback::battleGetSpellCost(const CSpell * sp, const CGHeroInst
 	si32 manaReduction = 0;
 	si32 manaIncrease = 0;
 
-	for(auto stack : battleAliveStacks())
+	for(auto unit : battleAliveUnits())
 	{
-		if(stack->owner == caster->tempOwner && stack->hasBonusOfType(Bonus::CHANGES_SPELL_COST_FOR_ALLY))
+		if(unit->unitOwner() == caster->tempOwner && unit->hasBonusOfType(Bonus::CHANGES_SPELL_COST_FOR_ALLY))
 		{
-			vstd::amax(manaReduction, stack->valOfBonuses(Bonus::CHANGES_SPELL_COST_FOR_ALLY));
+			vstd::amax(manaReduction, unit->valOfBonuses(Bonus::CHANGES_SPELL_COST_FOR_ALLY));
 		}
-		if(stack->owner != caster->tempOwner && stack->hasBonusOfType(Bonus::CHANGES_SPELL_COST_FOR_ENEMY))
+		if(unit->unitOwner() != caster->tempOwner && unit->hasBonusOfType(Bonus::CHANGES_SPELL_COST_FOR_ENEMY))
 		{
-			vstd::amax(manaIncrease, stack->valOfBonuses(Bonus::CHANGES_SPELL_COST_FOR_ENEMY));
+			vstd::amax(manaIncrease, unit->valOfBonuses(Bonus::CHANGES_SPELL_COST_FOR_ENEMY));
 		}
 	}
 
@@ -1659,17 +1675,18 @@ int CBattleInfoCallback::battleGetSurrenderCost(PlayerColor Player) const
 	if(!battleCanSurrender(Player))
 		return -1;
 
-	const auto side = playerToSide(Player);
-	if(!side)
+	const auto sideOpt = playerToSide(Player);
+	if(!sideOpt)
 		return -1;
+	const auto side = sideOpt.get();
 
 	int ret = 0;
 	double discount = 0;
-	for(const CStack * s : battleAliveStacks(side.get()))
-		if(s->base) //we pay for our stack that comes from our army slots - condition eliminates summoned cres and war machines
-			ret += s->getCreature()->cost[Res::GOLD] * s->getCount(); //todo: extract CStack method
 
-	if(const CGHeroInstance * h = battleGetFightingHero(side.get()))
+	for(auto unit : battleAliveUnits(side))
+		ret += unit->getRawSurrenderCost();
+
+	if(const CGHeroInstance * h = battleGetFightingHero(side))
 		discount += h->valOfBonuses(Bonus::SURRENDER_DISCOUNT);
 
 	ret *= (100.0 - discount) / 100.0;

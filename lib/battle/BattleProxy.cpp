@@ -23,7 +23,7 @@ BattleProxy::~BattleProxy() = default;
 
 int32_t BattleProxy::getActiveStackID() const
 {
-	auto ret = subject->battleActiveStack();
+	auto ret = subject->battleActiveUnit();
 	if(ret)
 		return ret->unitId();
 	else
