@@ -139,7 +139,7 @@ BattleAction CStupidAI::activeStack( const CStack * stack )
 		}
 		else
 		{
-			std::vector<BattleHex> avHexes = cb->battleGetAvailableHexes(stack, false);
+			std::vector<BattleHex> avHexes = cb->battleGetAvailableHexes(stack, false, nullptr);
 
 			for (BattleHex hex : avHexes)
 			{
@@ -270,7 +270,7 @@ void CStupidAI::print(const std::string &text) const
 BattleAction CStupidAI::goTowards(const CStack * stack, BattleHex destination)
 {
 	assert(destination.isValid());
-	auto avHexes = cb->battleGetAvailableHexes(stack, false);
+	auto avHexes = cb->battleGetAvailableHexes(stack, false, nullptr);
 	auto reachability = cb->getReachability(stack);
 
 	if(vstd::contains(avHexes, destination))

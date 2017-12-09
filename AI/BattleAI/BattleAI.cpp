@@ -148,7 +148,7 @@ BattleAction CBattleAI::activeStack( const CStack * stack )
 BattleAction CBattleAI::goTowards(const CStack * stack, BattleHex destination)
 {
 	assert(destination.isValid());
-	auto avHexes = cb->battleGetAvailableHexes(stack, false);
+	auto avHexes = cb->battleGetAvailableHexes(stack, false, nullptr);
 	auto reachability = cb->getReachability(stack);
 	if(vstd::contains(avHexes, destination))
 		return BattleAction::makeMove(stack, destination);
