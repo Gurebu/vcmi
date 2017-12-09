@@ -187,7 +187,12 @@ BattleAction CBattleAI::goTowards(const CStack * stack, BattleHex destination)
 		BattleHex currentDest = bestNeighbor;
 		while(1)
 		{
-			assert(currentDest.isValid());
+			if(!currentDest.isValid())
+			{
+				logAi->error("CBattleAI::goTowards: internal error");
+				return BattleAction::makeDefend(stack);
+			}
+
 			if(vstd::contains(avHexes, currentDest))
 				return BattleAction::makeMove(stack, currentDest);
 			currentDest = reachability.predecessors[currentDest];
