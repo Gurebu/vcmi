@@ -87,6 +87,9 @@ EffectTarget ChainDamage::transformTarget(const Mechanics * m, const Target & ai
 		for(auto hex : battle::Unit::getHexes(unit->getPosition(), unit->doubleWide(), unit->unitSide()))
 			possibleHexes.erase(hex);
 
+		if(possibleHexes.empty())
+			break;
+
 		lightningHex = BattleHex::getClosestTile(unit->unitSide(), lightningHex, possibleHexes);
 	}
 

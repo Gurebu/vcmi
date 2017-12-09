@@ -58,13 +58,13 @@ public:
 	void battleGetStackCountOutsideHexes(bool *ac) const; // returns hexes which when in front of a stack cause us to move the amount box back
 
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position
-	std::vector<BattleHex> battleGetAvailableHexes(const CStack * stack, bool addOccupiable, std::vector<BattleHex> * attackable) const;
+	std::vector<BattleHex> battleGetAvailableHexes(const battle::Unit * unit, bool addOccupiable, std::vector<BattleHex> * attackable) const;
 
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position (lite version)
-	std::vector<BattleHex> battleGetAvailableHexes(const battle::Unit * stack, BattleHex assumedPosition) const;
+	std::vector<BattleHex> battleGetAvailableHexes(const battle::Unit * unit) const;
 
 	int battleGetSurrenderCost(PlayerColor Player) const; //returns cost of surrendering battle, -1 if surrendering is not possible
-	ReachabilityInfo::TDistances battleGetDistances(const battle::Unit * stack, BattleHex assumedPosition) const;
+	ReachabilityInfo::TDistances battleGetDistances(const battle::Unit * unit, BattleHex assumedPosition) const;
 	std::set<BattleHex> battleGetAttackedHexes(const CStack* attacker, BattleHex destinationTile, BattleHex attackerPos = BattleHex::INVALID) const;
 
 	bool battleCanAttack(const CStack * stack, const CStack * target, BattleHex dest) const; //determines if stack with given ID can attack target at the selected destination

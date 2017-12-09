@@ -2085,7 +2085,7 @@ std::string formatDmgRange(std::pair<ui32, ui32> dmgRange)
 
 bool CBattleInterface::canStackMoveHere(const CStack * activeStack, BattleHex myNumber)
 {
-	std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes (activeStack, false, nullptr);
+	std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack);
 	BattleHex shiftedDest = myNumber.cloneInDirection(activeStack->destShiftDir(), false);
 
 	if (vstd::contains(acc, myNumber))
@@ -2313,7 +2313,7 @@ void CBattleInterface::handleHex(BattleHex myNumber, int eventType)
 				{
 					if(activeStack->doubleWide())
 					{
-						std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack, false, nullptr);
+						std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack);
 						BattleHex shiftedDest = myNumber.cloneInDirection(activeStack->destShiftDir(), false);
 						if(vstd::contains(acc, myNumber))
 							giveCommand(EActionType::WALK, myNumber);
@@ -2637,7 +2637,7 @@ BattleHex CBattleInterface::fromWhichHexAttack(BattleHex myNumber)
 		{
 			if(activeStack->doubleWide() && activeStack->side == BattleSide::DEFENDER)
 			{
-				std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack, false, nullptr);
+				std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack);
 				if (vstd::contains(acc, myNumber))
 					return myNumber - 1;
 				else
@@ -2689,7 +2689,7 @@ BattleHex CBattleInterface::fromWhichHexAttack(BattleHex myNumber)
 		{
 			if(activeStack->doubleWide() && activeStack->side == BattleSide::ATTACKER)
 			{
-				std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack, false, nullptr);
+				std::vector<BattleHex> acc = curInt->cb->battleGetAvailableHexes(activeStack);
 				if(vstd::contains(acc, myNumber))
 					return myNumber + 1;
 				else

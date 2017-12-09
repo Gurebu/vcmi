@@ -16,7 +16,7 @@ PotentialTargets::PotentialTargets(const battle::Unit * attacker, const Hypothet
 	const battle::Unit * attackerInfo = (attIter == state->stackStates.end()) ? attacker : (battle::Unit *)&attIter->second->state;
 
 	auto dists = state->battleGetDistances(attackerInfo, attackerInfo->getPosition());
-	auto avHexes = state->battleGetAvailableHexes(attackerInfo, attackerInfo->getPosition());
+	auto avHexes = state->battleGetAvailableHexes(attackerInfo);
 
 	//FIXME: this should part of battleGetAvailableHexes
 	bool forceTarget = false;

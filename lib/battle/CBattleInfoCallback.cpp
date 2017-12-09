@@ -448,26 +448,16 @@ void CBattleInfoCallback::battleGetStackCountOutsideHexes(bool *ac) const
 		ac[i] = (accessibility[i] == EAccessibility::ACCESSIBLE);
 }
 
-std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit, BattleHex assumedPosition) const
+std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit) const
 {
 	std::vector<BattleHex> ret;
 
 	RETURN_IF_NOT_BATTLE(ret);
-	if(!assumedPosition.isValid()) //turrets
+	if(!unit->getPosition().isValid()) //turrets
 		return ret;
 
 	auto unitSpeed = unit->Speed(0, true);
-
-	ReachabilityInfo::Parameters params(unit, assumedPosition);
-
-	if(!battleDoWeKnowAbout(unit->unitSide()))
-	{
-		//Stack is held by enemy, we can't use his perspective to check for reachability.
-		// Happens ie. when hovering enemy unit for its range. The arg could be set properly, but it's easier to fix it here.
-		params.perspective = battleGetMySide();
-	}
-
-	auto reachability = getReachability(params);
+	auto reachability = getReachability(unit);
 
 	for(int i = 0; i < GameConstants::BFIELD_SIZE; ++i)
 	{
@@ -494,19 +484,19 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 	return ret;
 }
 
-std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const CStack * stack, bool addOccupiable, std::vector<BattleHex> * attackable) const
+std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit, bool addOccupiable, std::vector<BattleHex> * attackable) const
 {
-	std::vector<BattleHex> ret = battleGetAvailableHexes(stack, stack->getPosition());
+	std::vector<BattleHex> ret = battleGetAvailableHexes(unit);
 
 	if(ret.empty())
 		return ret;
 
-	if(addOccupiable && stack->doubleWide())
+	if(addOccupiable && unit->doubleWide())
 	{
 		std::vector<BattleHex> occupiable;
 
 		for(auto hex : ret)
-			occupiable.push_back(stack->occupiedHex(hex));
+			occupiable.push_back(unit->occupiedHex(hex));
 
 		vstd::concatenate(ret, occupiable);
 	}
@@ -524,14 +514,14 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const CStack
 			});
 			return availableNeighbor != ret.end();
 		};
-		for(auto otherSt : battleAliveUnits(1-stack->side))
+		for(auto otherSt : battleAliveUnits(otherSide(unit->unitSide())))
 		{
 			if(!otherSt->isValidTarget(false))
 				continue;
 
 			std::vector<BattleHex> occupied = otherSt->getHexes();
 
-			if(battleCanShoot(stack, otherSt->getPosition()))
+			if(battleCanShoot(unit, otherSt->getPosition()))
 			{
 				attackable->insert(attackable->end(), occupied.begin(), occupied.end());
 				continue;
@@ -1090,7 +1080,7 @@ std::set<BattleHex> CBattleInfoCallback::getStoppers(BattlePerspective::BattlePe
 std::pair<const battle::Unit *, BattleHex> CBattleInfoCallback::getNearestStack(const battle::Unit * closest) const
 {
 	auto reachability = getReachability(closest);
-	auto avHexes = battleGetAvailableHexes(closest, closest->getPosition());
+	auto avHexes = battleGetAvailableHexes(closest);
 
 	// I hate std::pairs with their undescriptive member names first / second
 	struct DistStack
@@ -1369,13 +1359,13 @@ bool CBattleInfoCallback::isToReverse (BattleHex hexFrom, BattleHex hexTo, bool 
 	}
 }
 
-ReachabilityInfo::TDistances CBattleInfoCallback::battleGetDistances(const battle::Unit * stack, BattleHex assumedPosition) const
+ReachabilityInfo::TDistances CBattleInfoCallback::battleGetDistances(const battle::Unit * unit, BattleHex assumedPosition) const
 {
 	ReachabilityInfo::TDistances ret;
 	ret.fill(-1);
 	RETURN_IF_NOT_BATTLE(ret);
 
-	ReachabilityInfo::Parameters params(stack, assumedPosition);
+	ReachabilityInfo::Parameters params(unit, assumedPosition);
 	params.perspective = battleGetMySide();
 
 	auto reachability = getReachability(params);
