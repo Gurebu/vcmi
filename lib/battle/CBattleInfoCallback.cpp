@@ -450,6 +450,18 @@ void CBattleInfoCallback::battleGetStackCountOutsideHexes(bool *ac) const
 
 std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit) const
 {
+
+	RETURN_IF_NOT_BATTLE(std::vector<BattleHex>());
+	if(!unit->getPosition().isValid()) //turrets
+		return std::vector<BattleHex>();
+
+	auto reachability = getReachability(unit);
+
+	return battleGetAvailableHexes(reachability, unit);
+}
+
+std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const ReachabilityInfo & cache, const battle::Unit * unit) const
+{
 	std::vector<BattleHex> ret;
 
 	RETURN_IF_NOT_BATTLE(ret);
@@ -457,12 +469,11 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 		return ret;
 
 	auto unitSpeed = unit->Speed(0, true);
-	auto reachability = getReachability(unit);
 
 	for(int i = 0; i < GameConstants::BFIELD_SIZE; ++i)
 	{
 		// If obstacles or other stacks makes movement impossible, it can't be helped.
-		if(!reachability.isReachable(i))
+		if(!cache.isReachable(i))
 			continue;
 
 		if(battleTacticDist() && battleGetTacticsSide() == unit->unitSide())
@@ -474,7 +485,7 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 		else
 		{
 			//Not tactics phase -> destination must be reachable and within unit range.
-			if(reachability.distances[i] > unitSpeed)
+			if(cache.distances[i] > unitSpeed)
 				continue;
 		}
 
@@ -483,6 +494,7 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 
 	return ret;
 }
+
 
 std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle::Unit * unit, bool addOccupiable, std::vector<BattleHex> * attackable) const
 {
@@ -1083,7 +1095,7 @@ std::set<BattleHex> CBattleInfoCallback::getStoppers(BattlePerspective::BattlePe
 std::pair<const battle::Unit *, BattleHex> CBattleInfoCallback::getNearestStack(const battle::Unit * closest) const
 {
 	auto reachability = getReachability(closest);
-	auto avHexes = battleGetAvailableHexes(closest);
+	auto avHexes = battleGetAvailableHexes(reachability, closest);
 
 	// I hate std::pairs with their undescriptive member names first / second
 	struct DistStack
@@ -1368,10 +1380,7 @@ ReachabilityInfo::TDistances CBattleInfoCallback::battleGetDistances(const battl
 	ret.fill(-1);
 	RETURN_IF_NOT_BATTLE(ret);
 
-	ReachabilityInfo::Parameters params(unit, assumedPosition);
-	params.perspective = battleGetMySide();
-
-	auto reachability = getReachability(params);
+	auto reachability = getReachability(unit);
 
 	boost::copy(reachability.distances, ret.begin());
 

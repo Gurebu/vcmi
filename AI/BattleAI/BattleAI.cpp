@@ -147,9 +147,15 @@ BattleAction CBattleAI::activeStack( const CStack * stack )
 
 BattleAction CBattleAI::goTowards(const CStack * stack, BattleHex destination)
 {
-	assert(destination.isValid());
-	auto avHexes = cb->battleGetAvailableHexes(stack);
+	if(!destination.isValid())
+	{
+		logAi->error("CBattleAI::goTowards: invalid destination");
+		return BattleAction::makeDefend(stack);
+	}
+
 	auto reachability = cb->getReachability(stack);
+	auto avHexes = cb->battleGetAvailableHexes(reachability, stack);
+
 	if(vstd::contains(avHexes, destination))
 		return BattleAction::makeMove(stack, destination);
 	auto destNeighbours = destination.neighbouringTiles();
@@ -202,9 +208,8 @@ BattleAction CBattleAI::goTowards(const CStack * stack, BattleHex destination)
 
 BattleAction CBattleAI::useCatapult(const CStack * stack)
 {
-	throw std::runtime_error("The method or operation is not implemented.");
+	throw std::runtime_error("CBattleAI::useCatapult is not implemented.");
 }
-
 
 enum class SpellTypes
 {

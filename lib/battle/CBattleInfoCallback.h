@@ -63,6 +63,8 @@ public:
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position (lite version)
 	std::vector<BattleHex> battleGetAvailableHexes(const battle::Unit * unit) const;
 
+	std::vector<BattleHex> battleGetAvailableHexes(const ReachabilityInfo & cache, const battle::Unit * unit) const;
+
 	int battleGetSurrenderCost(PlayerColor Player) const; //returns cost of surrendering battle, -1 if surrendering is not possible
 	ReachabilityInfo::TDistances battleGetDistances(const battle::Unit * unit, BattleHex assumedPosition) const;
 	std::set<BattleHex> battleGetAttackedHexes(const CStack* attacker, BattleHex destinationTile, BattleHex attackerPos = BattleHex::INVALID) const;
