@@ -15,6 +15,7 @@ PotentialTargets::PotentialTargets(const battle::Unit * attacker, const Hypothet
 	auto attIter = state->stackStates.find(attacker->unitId());
 	const battle::Unit * attackerInfo = (attIter == state->stackStates.end()) ? attacker : (battle::Unit *)&attIter->second->state;
 
+	//FIXME: double reachability calculation
 	auto dists = state->battleGetDistances(attackerInfo, attackerInfo->getPosition());
 	auto avHexes = state->battleGetAvailableHexes(attackerInfo);
 

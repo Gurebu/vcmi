@@ -1033,6 +1033,10 @@ ReachabilityInfo CBattleInfoCallback::makeBFS(const AccessibilityInfo &accessibi
 	hexq.push(params.startPosition);
 	ret.distances[params.startPosition] = 0;
 
+	std::array<bool, GameConstants::BFIELD_SIZE> accessibleCache;
+	for(int hex = 0; hex < GameConstants::BFIELD_SIZE; hex++)
+		accessibleCache[hex] = accessibility.accessible(hex, params.doubleWide, params.side);
+
 	while(!hexq.empty()) //bfs loop
 	{
 		const BattleHex curHex = hexq.front();
@@ -1046,10 +1050,9 @@ ReachabilityInfo CBattleInfoCallback::makeBFS(const AccessibilityInfo &accessibi
 		const int costToNeighbour = ret.distances[curHex] + 1;
 		for(BattleHex neighbour : curHex.neighbouringTiles())
 		{
-			const bool accessible = accessibility.accessible(neighbour, params.doubleWide, params.side);
 			const int costFoundSoFar = ret.distances[neighbour];
 
-			if(accessible && costToNeighbour < costFoundSoFar)
+			if(accessibleCache[neighbour.hex] && costToNeighbour < costFoundSoFar)
 			{
 				hexq.push(neighbour);
 				ret.distances[neighbour] = costToNeighbour;

@@ -430,7 +430,7 @@ bool CUnitState::ableToRetaliate() const
 
 bool CUnitState::alive() const
 {
-	return health.available() > 0;
+	return health.getCount() > 0;
 }
 
 bool CUnitState::isGhost() const
