@@ -309,8 +309,12 @@ void CBattleAI::attemptCastingSpell()
 	RNGStub rngStub;
 
 	ValueMap valueOfStack;
+	ValueMap healthOfStack;
 
 	TStacks all = cb->battleGetAllStacks(true);
+
+	for(auto unit : all)
+		healthOfStack[unit->unitId()] = unit->getAvailableHealth();
 
 	auto amount = all.size();
 
@@ -332,6 +336,11 @@ void CBattleAI::attemptCastingSpell()
 		spells::BattleCast cast(&state, hero, spells::Mode::HERO, ps->spell);
 		cast.target = ps->dest;
 		cast.cast(&state, rngStub);
+		ValueMap newHealthOfStack;
+		for(auto unit : all)
+		{
+			newHealthOfStack[unit->unitId()] = unit->getAvailableHealth();
+		}
 
 		std::vector<battle::Units> newTurnOrder;
 		state.battleGetTurnOrder(newTurnOrder, amount, 2);
@@ -340,17 +349,22 @@ void CBattleAI::attemptCastingSpell()
 
 		evaluateQueue(newValueOfStack, newTurnOrder, &state);
 
-		for(auto sta : all)
+		for(auto unit : all)
 		{
-			auto newValue = getValOr(newValueOfStack, sta->unitId(), 0);
-			auto oldValue = getValOr(valueOfStack, sta->unitId(), 0);
+			auto newValue = getValOr(newValueOfStack, unit->unitId(), 0);
+			auto oldValue = getValOr(valueOfStack, unit->unitId(), 0);
 
-			auto gain = newValue - oldValue;
+			auto healthDiff = newHealthOfStack[unit->unitId()] - healthOfStack[unit->unitId()];
+
+			if(unit->unitOwner() != playerID)
+				healthDiff = -healthDiff;
+
+			auto gain = newValue - oldValue + healthDiff;
 
 			if(gain != 0)
 			{
 //				LOGFL("%s would change %s by %d points (from %d to %d)",
-//					  ps->spell->name % sta->nodeName() % (gain) % (oldValue) % (newValue));
+//					  ps->spell->name % unit->nodeName() % (gain) % (oldValue) % (newValue));
 				totalGain += gain;
 			}
 		}
@@ -392,7 +406,7 @@ void CBattleAI::attemptCastingSpell()
 
 	if(castToPerform.value > 0)
 	{
-		LOGFL("Best spell is %s. Will cast.", castToPerform.spell->name);
+		LOGFL("Best spell is %s (value %d). Will cast.", castToPerform.value % castToPerform.spell->name);
 		BattleAction spellcast;
 		spellcast.actionType = EActionType::HERO_SPELL;
 		spellcast.actionSubtype = castToPerform.spell->id;

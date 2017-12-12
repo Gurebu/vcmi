@@ -10,14 +10,21 @@
 #include "StdInc.h"
 #include "AttackPossibility.h"
 
-int AttackPossibility::damageDiff() const
+AttackPossibility::AttackPossibility(std::shared_ptr<battle::CUnitState> enemy_, BattleHex tile_, const BattleAttackInfo & attack_)
+	: enemy(enemy_),
+	tile(tile_),
+	attack(attack_)
 {
-	if (!priorities)
-		priorities = new Priorities();
-	const auto dealtDmgValue = priorities->stackEvaluator(enemy.get()) * damageDealt;
-	const auto receivedDmgValue = priorities->stackEvaluator(attack.attacker.get()) * damageReceived;
+}
 
-	int diff = 0;
+
+int64_t AttackPossibility::damageDiff() const
+{
+	//TODO: use target priority from HypotheticBattle
+	const auto dealtDmgValue = damageDealt;
+	const auto receivedDmgValue = damageReceived;
+
+	int64_t diff = 0;
 
 	//friendly fire or not
 	if(attack.attacker->unitSide() == enemy->unitSide())
@@ -32,7 +39,7 @@ int AttackPossibility::damageDiff() const
 	return diff;
 }
 
-int AttackPossibility::attackValue() const
+int64_t AttackPossibility::attackValue() const
 {
 	return damageDiff() + tacticImpact;
 }
@@ -44,7 +51,7 @@ AttackPossibility AttackPossibility::evaluate(const BattleAttackInfo & AttackInf
 
 	const int totalAttacks = 1 + AttackInfo.attacker->getBonuses(Selector::type(Bonus::ADDITIONAL_ATTACK), (Selector::effectRange (Bonus::NO_LIMIT).Or(Selector::effectRange(Bonus::ONLY_MELEE_FIGHT))))->totalValue();
 
-	AttackPossibility ap = {AttackInfo.defender, hex, AttackInfo, 0, 0, 0};
+	AttackPossibility ap(AttackInfo.defender, hex, AttackInfo);
 
 	BattleAttackInfo curBai = AttackInfo; //we'll modify here the stack state
 
@@ -82,6 +89,3 @@ AttackPossibility AttackPossibility::evaluate(const BattleAttackInfo & AttackInf
 
 	return ap;
 }
-
-
-Priorities* AttackPossibility::priorities = nullptr;
