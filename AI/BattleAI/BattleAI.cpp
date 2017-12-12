@@ -406,7 +406,7 @@ void CBattleAI::attemptCastingSpell()
 
 	if(castToPerform.value > 0)
 	{
-		LOGFL("Best spell is %s (value %d). Will cast.", castToPerform.value % castToPerform.spell->name);
+		LOGFL("Best spell is %s (value %d). Will cast.", castToPerform.spell->name % castToPerform.value);
 		BattleAction spellcast;
 		spellcast.actionType = EActionType::HERO_SPELL;
 		spellcast.actionSubtype = castToPerform.spell->id;

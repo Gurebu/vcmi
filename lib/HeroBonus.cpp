@@ -426,11 +426,17 @@ int IBonusBearer::LuckVal() const
 
 si32 IBonusBearer::Attack() const
 {
-	si32 ret = valOfBonuses(Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
+	static const std::string cachingStrSkill = "type_PRIMARY_SKILLs_ATTACK";
+	static const auto selectorSkill = Selector::typeSubtype(Bonus::PRIMARY_SKILL, PrimarySkill::ATTACK);
 
-	if (double frenzyPower = valOfBonuses(Bonus::IN_FRENZY)) //frenzy for attacker
+	static const std::string cachingStrFrenzy = "type_IN_FRENZY";
+	static const auto selectorFrenzy = Selector::type(Bonus::IN_FRENZY);
+
+	si32 ret = valOfBonuses(selectorSkill, cachingStrSkill);
+
+	if(si32 frenzyPower = valOfBonuses(selectorFrenzy, cachingStrFrenzy)) //frenzy for attacker
 	{
-		ret += (frenzyPower/100) * (double)Defense(false);
+		ret += ((double)frenzyPower/100) * (double)Defense(false);
 	}
 	vstd::amax(ret, 0);
 
@@ -439,9 +445,15 @@ si32 IBonusBearer::Attack() const
 
 si32 IBonusBearer::Defense(bool withFrenzy) const
 {
-	si32 ret = valOfBonuses(Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
+	static const std::string cachingStrSkill = "type_PRIMARY_SKILLs_DEFENSE";
+	static const auto selectorSkill = Selector::typeSubtype(Bonus::PRIMARY_SKILL, PrimarySkill::DEFENSE);
 
-	if(withFrenzy && hasBonusOfType(Bonus::IN_FRENZY)) //frenzy for defender
+	static const std::string cachingStrFrenzy = "type_IN_FRENZY";
+	static const auto selectorFrenzy = Selector::type(Bonus::IN_FRENZY);
+
+	si32 ret = valOfBonuses(selectorSkill, cachingStrSkill);
+
+	if(withFrenzy && hasBonus(selectorFrenzy, cachingStrFrenzy)) //frenzy for defender
 	{
 		return 0;
 	}
